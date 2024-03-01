@@ -1,5 +1,6 @@
-package com.cleanup.todoc.ui;
+package com.cleanup.todoc.ui.components;
 
+import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,9 +12,13 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cleanup.todoc.R;
+import com.cleanup.todoc.database.ApplicationDatabase;
+import com.cleanup.todoc.enums.SortMethod;
 import com.cleanup.todoc.model.Project;
 import com.cleanup.todoc.model.Task;
+import com.cleanup.todoc.model.TaskWithProject;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,11 +27,14 @@ import java.util.List;
  * @author Gaëtan HERFRAY
  */
 public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHolder> {
+
+    private SortMethod sortMethod = SortMethod.NONE;
+
     /**
      * The list of tasks the adapter deals with
      */
     @NonNull
-    private List<Task> tasks;
+    private List<TaskWithProject> tasks;
 
     /**
      * The listener for when a task needs to be deleted
@@ -39,7 +47,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
      *
      * @param tasks the list of tasks the adapter deals with to set
      */
-    TasksAdapter(@NonNull final List<Task> tasks, @NonNull final DeleteTaskListener deleteTaskListener) {
+    public TasksAdapter(@NonNull final List<TaskWithProject> tasks, @NonNull final DeleteTaskListener deleteTaskListener) {
         this.tasks = tasks;
         this.deleteTaskListener = deleteTaskListener;
     }
@@ -49,9 +57,36 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
      *
      * @param tasks the list of tasks the adapter deals with to set
      */
-    void updateTasks(@NonNull final List<Task> tasks) {
+    @SuppressLint("NotifyDataSetChanged")
+    public void updateTasks(@NonNull final List<TaskWithProject> tasks) {
         this.tasks = tasks;
+        this.applySorting();
         notifyDataSetChanged();
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void setSortMethod(SortMethod sortMethod) {
+        this.sortMethod = sortMethod;
+        this.applySorting();
+        notifyDataSetChanged();
+    }
+
+    private void applySorting() {
+        switch (sortMethod) {
+            case ALPHABETICAL:
+                Collections.sort(tasks, new TaskWithProject.TaskAZComparator());
+                break;
+            case ALPHABETICAL_INVERTED:
+                Collections.sort(tasks, new TaskWithProject.TaskZAComparator());
+                break;
+            case RECENT_FIRST:
+                Collections.sort(tasks, new TaskWithProject.TaskRecentComparator());
+                break;
+            case OLD_FIRST:
+                Collections.sort(tasks, new TaskWithProject.TaskOldComparator());
+                break;
+
+        }
     }
 
     @NonNull
@@ -117,7 +152,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         /**
          * Instantiates a new TaskViewHolder.
          *
-         * @param itemView the view of the task item
+         * @param itemView           the view of the task item
          * @param deleteTaskListener the listener for when a task needs to be deleted to set
          */
         TaskViewHolder(@NonNull View itemView, @NonNull DeleteTaskListener deleteTaskListener) {
@@ -130,13 +165,10 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
             lblProjectName = itemView.findViewById(R.id.lbl_project_name);
             imgDelete = itemView.findViewById(R.id.img_delete);
 
-            imgDelete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    final Object tag = view.getTag();
-                    if (tag instanceof Task) {
-                        TaskViewHolder.this.deleteTaskListener.onDeleteTask((Task) tag);
-                    }
+            imgDelete.setOnClickListener(view -> {
+                final Object tag = view.getTag();
+                if (tag instanceof Task) {
+                    TaskViewHolder.this.deleteTaskListener.onDeleteTask((Task) tag);
                 }
             });
         }
@@ -144,21 +176,19 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         /**
          * Binds a task to the item view.
          *
-         * @param task the task to bind in the item view
+         * @param taskWithProject the task to bind in the item view
          */
-        void bind(Task task) {
-            lblTaskName.setText(task.getName());
-            imgDelete.setTag(task);
+        void bind(TaskWithProject taskWithProject) {
+            lblTaskName.setText(taskWithProject.getTask().getName());
+            imgDelete.setTag(taskWithProject.getTask());
 
-            final Project taskProject = task.getProject();
-            if (taskProject != null) {
-                imgProject.setSupportImageTintList(ColorStateList.valueOf(taskProject.getColor()));
-                lblProjectName.setText(taskProject.getName());
+            if (taskWithProject.getProject() != null) {
+                imgProject.setSupportImageTintList(ColorStateList.valueOf(taskWithProject.getProject().getColor()));
+                lblProjectName.setText(taskWithProject.getProject().getName());
             } else {
                 imgProject.setVisibility(View.INVISIBLE);
                 lblProjectName.setText("");
             }
-
         }
     }
 }
