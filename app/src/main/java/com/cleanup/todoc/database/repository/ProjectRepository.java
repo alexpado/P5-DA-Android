@@ -10,14 +10,14 @@ import com.cleanup.todoc.model.Task;
 
 import java.util.List;
 
+/**
+ * Interface defining all the possible manipulation for {@link Project} in the database.
+ */
 @Dao
 public interface ProjectRepository {
 
     @Query("SELECT * FROM project")
     LiveData<List<Project>> findAll();
-
-    @Query("SELECT * FROM project WHERE id = :id")
-    LiveData<Project> findById(long id);
 
     @Insert
     void saveAll(Project... projects);

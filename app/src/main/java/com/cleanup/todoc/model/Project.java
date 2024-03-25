@@ -13,6 +13,7 @@ import androidx.room.PrimaryKey;
  */
 @Entity
 public class Project {
+
     /**
      * The unique identifier of the project
      */
@@ -35,29 +36,37 @@ public class Project {
      * Instantiates a new Project
      */
     public Project() {
+
     }
 
     /**
      * Instantiates a new Project.
      *
-     * @param id    the id of the project to set
-     * @param name  the name of the project to set
-     * @param color the hex (ARGB) code of the color associated to the project to set
+     * @param id
+     *         the id of the project to set
+     * @param name
+     *         the name of the project to set
+     * @param color
+     *         the hex (ARGB) code of the color associated to the project to set
      */
     public Project(long id, @NonNull String name, @ColorInt int color) {
-        this.id = id;
-        this.name = name;
+
+        this.id    = id;
+        this.name  = name;
         this.color = color;
     }
 
     /**
      * Instantiates a new Project.
      *
-     * @param name  the name of the project to set
-     * @param color the hex (ARGB) code of the color associated to the project to set
+     * @param name
+     *         the name of the project to set
+     * @param color
+     *         the hex (ARGB) code of the color associated to the project to set
      */
     public Project(@NonNull String name, @ColorInt int color) {
-        this.name = name;
+
+        this.name  = name;
         this.color = color;
     }
 
@@ -67,6 +76,7 @@ public class Project {
      * @return the unique identifier of the project
      */
     public long getId() {
+
         return id;
     }
 
@@ -78,6 +88,7 @@ public class Project {
      */
     @NonNull
     public String getName() {
+
         return name;
     }
 
@@ -88,24 +99,30 @@ public class Project {
      */
     @ColorInt
     public int getColor() {
+
         return color;
     }
 
     public void setId(long id) {
+
         this.id = id;
     }
 
     public void setName(@NonNull String name) {
+
         this.name = name;
     }
 
     public void setColor(int color) {
+
         this.color = color;
     }
 
     @Override
     @NonNull
     public String toString() {
+
         return getName();
     }
+
 }

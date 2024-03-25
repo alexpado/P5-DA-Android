@@ -14,6 +14,7 @@ import java.util.Comparator;
  */
 @Entity
 public class Task {
+
     /**
      * The unique identifier of the task
      */
@@ -41,11 +42,15 @@ public class Task {
     /**
      * Instantiates a new Task.
      *
-     * @param projectId         the project id associated to the task to set
-     * @param name              the name of the task to set
-     * @param creationTimestamp the timestamp when the task has been created to set
+     * @param projectId
+     *         the project id associated to the task to set
+     * @param name
+     *         the name of the task to set
+     * @param creationTimestamp
+     *         the timestamp when the task has been created to set
      */
     public Task(long projectId, @NonNull String name, long creationTimestamp) {
+
         this.setProjectId(projectId);
         this.setName(name);
         this.setCreationTimestamp(creationTimestamp);
@@ -57,23 +62,28 @@ public class Task {
      * @return the unique identifier of the task
      */
     public long getId() {
+
         return id;
     }
 
     /**
      * Sets the unique identifier of the task.
      *
-     * @param id the unique idenifier of the task to set
+     * @param id
+     *         the unique idenifier of the task to set
      */
     public void setId(long id) {
+
         this.id = id;
     }
 
     public long getProjectId() {
+
         return projectId;
     }
 
     public void setProjectId(long projectId) {
+
         this.projectId = projectId;
     }
 
@@ -84,28 +94,34 @@ public class Task {
      */
     @NonNull
     public String getName() {
+
         return name;
     }
 
     /**
      * Sets the name of the task.
      *
-     * @param name the name of the task to set
+     * @param name
+     *         the name of the task to set
      */
     public void setName(@NonNull String name) {
+
         this.name = name;
     }
 
     /**
      * Sets the timestamp when the task has been created.
      *
-     * @param creationTimestamp the timestamp when the task has been created to set
+     * @param creationTimestamp
+     *         the timestamp when the task has been created to set
      */
     public void setCreationTimestamp(long creationTimestamp) {
+
         this.creationTimestamp = creationTimestamp;
     }
 
     public long getCreationTimestamp() {
+
         return creationTimestamp;
     }
 
@@ -113,39 +129,52 @@ public class Task {
      * Comparator to sort task from A to Z
      */
     public static class TaskAZComparator implements Comparator<Task> {
+
         @Override
         public int compare(Task left, Task right) {
+
             return left.name.compareTo(right.name);
         }
+
     }
 
     /**
      * Comparator to sort task from Z to A
      */
     public static class TaskZAComparator implements Comparator<Task> {
+
         @Override
         public int compare(Task left, Task right) {
+
             return right.name.compareTo(left.name);
         }
+
     }
 
     /**
      * Comparator to sort task from last created to first created
      */
     public static class TaskRecentComparator implements Comparator<Task> {
+
         @Override
         public int compare(Task left, Task right) {
+
             return (int) (right.creationTimestamp - left.creationTimestamp);
         }
+
     }
 
     /**
      * Comparator to sort task from first created to last created
      */
     public static class TaskOldComparator implements Comparator<Task> {
+
         @Override
         public int compare(Task left, Task right) {
+
             return (int) (left.creationTimestamp - right.creationTimestamp);
         }
+
     }
+
 }

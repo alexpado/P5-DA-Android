@@ -76,35 +76,36 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     /**
      * The RecyclerView which displays the list of tasks
      */
-    // Suppress warning is safe because variable is initialized in onCreate
-    @SuppressWarnings("NullableProblems")
-    @NonNull
     private RecyclerView listTasks;
 
     /**
      * The TextView displaying the empty state
      */
-    // Suppress warning is safe because variable is initialized in onCreate
-    @SuppressWarnings("NullableProblems")
-    @NonNull
     private TextView lblNoTasks;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.database = ApplicationDatabase.initialize(getApplicationContext());
+        this.database     = ApplicationDatabase.initialize(getApplicationContext());
         this.tasksAdapter = new TasksAdapter(new ArrayList<>(), this);
 
         this.projectContainer = new ProjectContainer(this.getApplicationContext());
 
-        this.database.projectRepository().findAll().observe(this, this.projectContainer::setContent);
+        this.database.projectRepository()
+                     .findAll()
+                     .observe(this, this.projectContainer::setContent);
         this.database.taskRepository().findAll().observe(this, this::updateTasks);
 
-        listTasks = findViewById(R.id.list_tasks);
+        listTasks  = findViewById(R.id.list_tasks);
         lblNoTasks = findViewById(R.id.lbl_no_task);
 
-        listTasks.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        listTasks.setLayoutManager(new LinearLayoutManager(
+                this,
+                LinearLayoutManager.VERTICAL,
+                false
+        ));
         listTasks.setAdapter(this.tasksAdapter);
 
         findViewById(R.id.fab_add_task).setOnClickListener(view -> showAddTaskDialog());
@@ -112,12 +113,14 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         getMenuInflater().inflate(R.menu.actions, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         int id = item.getItemId();
 
         if (id == R.id.filter_alphabetical) {
@@ -135,13 +138,15 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
     @Override
     public void onDeleteTask(Task task) {
+
         ApplicationDatabase.run(() -> this.database.taskRepository().delete(task));
     }
 
     /**
      * Called when the user clicks on the positive button of the Create Task Dialog.
      *
-     * @param dialogInterface the current displayed dialog
+     * @param dialogInterface
+     *         the current displayed dialog
      */
     private void onPositiveButtonClick(DialogInterface dialogInterface) {
         // If dialog is open
@@ -186,12 +191,13 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
      * Shows the Dialog for adding a Task
      */
     private void showAddTaskDialog() {
+
         final AlertDialog dialog = getAddTaskDialog();
 
         dialog.show();
 
         dialogEditText = dialog.findViewById(R.id.txt_task_name);
-        dialogSpinner = dialog.findViewById(R.id.project_spinner);
+        dialogSpinner  = dialog.findViewById(R.id.project_spinner);
 
         if (dialogSpinner != null) {
             dialogSpinner.setAdapter(this.projectContainer.getAdapter());
@@ -201,9 +207,11 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     /**
      * Adds the given task to the list of created tasks.
      *
-     * @param task the task to be added to the list
+     * @param task
+     *         the task to be added to the list
      */
     private void addTask(@NonNull Task task) {
+
         ApplicationDatabase.run(() -> this.database.taskRepository().saveAll(task));
     }
 
@@ -211,7 +219,8 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
      * Updates the list of tasks in the UI
      */
     private void updateTasks(List<TaskWithProject> tasks) {
-        if (tasks.size() == 0) {
+
+        if (tasks.isEmpty()) {
             lblNoTasks.setVisibility(View.VISIBLE);
             listTasks.setVisibility(View.GONE);
         } else {
@@ -229,6 +238,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
      */
     @NonNull
     private AlertDialog getAddTaskDialog() {
+
         final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this, R.style.Dialog);
 
         alertBuilder.setTitle(R.string.add_task);
@@ -236,8 +246,8 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         alertBuilder.setPositiveButton(R.string.add, null);
         alertBuilder.setOnDismissListener(dialogInterface -> {
             dialogEditText = null;
-            dialogSpinner = null;
-            dialog = null;
+            dialogSpinner  = null;
+            dialog         = null;
         });
 
         dialog = alertBuilder.create();
