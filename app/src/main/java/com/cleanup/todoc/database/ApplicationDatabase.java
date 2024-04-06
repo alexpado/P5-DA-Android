@@ -2,16 +2,14 @@ package com.cleanup.todoc.database;
 
 import android.content.Context;
 
-import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-import androidx.sqlite.db.SupportSQLiteDatabase;
 
-import com.cleanup.todoc.model.Project;
-import com.cleanup.todoc.model.Task;
 import com.cleanup.todoc.database.repository.ProjectRepository;
 import com.cleanup.todoc.database.repository.TaskRepository;
+import com.cleanup.todoc.model.Project;
+import com.cleanup.todoc.model.Task;
 
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -47,20 +45,46 @@ public abstract class ApplicationDatabase extends RoomDatabase {
     }
 
     /**
-     * Initialize the database if it hasn't been initialized yet.
+     * Create an instance of {@link ApplicationDatabase} that resides in memory. This is
+     * particularly useful when it comes to instrumented tests.
      *
      * @param context
-     *         The application context for which the database will be created.
+     *         The {@link Context} to use to create the {@link ApplicationDatabase}.
+     * @param customCallback
+     *         The {@link RoomDatabase.Callback} instance to use when building the
+     *         {@link ApplicationDatabase} instance.
      *
      * @return An {@link ApplicationDatabase} instance.
      */
-    public static ApplicationDatabase initialize(Context context) {
+    public static ApplicationDatabase createInMemoryDatabase(Context context, RoomDatabase.Callback customCallback) {
 
-        if (!hasInstance()) {
-            instance = Room.databaseBuilder(context, ApplicationDatabase.class, "todoc")
-                           .addCallback(new CallBack())
-                           .build();
+        if (hasInstance()) {
+            instance.close();
         }
+        instance = Room.inMemoryDatabaseBuilder(context, ApplicationDatabase.class)
+                       .addCallback(customCallback)
+                       .build();
+
+        return getInstance();
+    }
+
+    /**
+     * Create an instance of {@link ApplicationDatabase} that reside on the device. This is the
+     * production database.
+     *
+     * @param context
+     *         The {@link Context} to use to create the {@link ApplicationDatabase}.
+     *
+     * @return An {@link ApplicationDatabase} instance.
+     */
+    public static ApplicationDatabase createProductionDatabase(Context context) {
+
+        if (hasInstance()) {
+            instance.close();
+        }
+        instance = Room.databaseBuilder(context, ApplicationDatabase.class, "todoc")
+                       .addCallback(new ProductionDatabaseCallback())
+                       .build();
         return getInstance();
     }
 
@@ -93,78 +117,5 @@ public abstract class ApplicationDatabase extends RoomDatabase {
      * @return A {@link TaskRepository} proxy instance.
      */
     public abstract TaskRepository taskRepository();
-
-    /**
-     * Callback class used to initialize the database default data when it is created for the first
-     * time.
-     */
-    public static class CallBack extends RoomDatabase.Callback {
-
-        /**
-         * Return all default {@link Project} instances to add to the database when it is first
-         * created.
-         *
-         * @return An array of {@link Project}
-         */
-        public static Project[] getAllProjects() {
-
-            return new Project[]{
-                    new Project(1L, "Projet Tartampion", 0xFFEADAD1),
-                    new Project(2L, "Projet Lucidia", 0xFFB4CDBA),
-                    new Project(3L, "Projet Circus", 0xFFA3CED2),
-                    };
-        }
-
-        /**
-         * Return all default {@link Task} instances to add to the database when it is first
-         * created.
-         *
-         * @return An array of {@link Task}
-         */
-        public static Task[] getAllTask() {
-
-            Project[] projects = getAllProjects();
-
-            return new Task[]{
-                    new Task(
-                            projects[0].getId(),
-                            "Ajouter un header sur le site",
-                            System.currentTimeMillis()
-                    ),
-                    new Task(
-                            projects[1].getId(),
-                            "Modifier la couleur des textes",
-                            System.currentTimeMillis()
-                    ),
-                    new Task(
-                            projects[1].getId(),
-                            "Appeler le client",
-                            System.currentTimeMillis()
-                    ),
-                    new Task(
-                            projects[0].getId(),
-                            "Intégrer Google Analytics",
-                            System.currentTimeMillis()
-                    ),
-                    new Task(
-                            projects[2].getId(),
-                            "Ajouter un header sur le site",
-                            System.currentTimeMillis()
-                    )
-            };
-        }
-
-        @Override
-        public void onCreate(@NonNull SupportSQLiteDatabase db) {
-
-            super.onCreate(db);
-
-            ApplicationDatabase.run(() -> {
-                instance.projectRepository().saveAll(getAllProjects());
-                instance.taskRepository().saveAll(getAllTask());
-            });
-        }
-
-    }
 
 }

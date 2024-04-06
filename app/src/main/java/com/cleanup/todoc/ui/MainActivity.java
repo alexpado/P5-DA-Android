@@ -17,8 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.cleanup.todoc.database.ApplicationDatabase;
 import com.cleanup.todoc.R;
+import com.cleanup.todoc.database.ApplicationDatabase;
 import com.cleanup.todoc.enums.SortMethod;
 import com.cleanup.todoc.model.Project;
 import com.cleanup.todoc.model.Task;
@@ -27,10 +27,8 @@ import com.cleanup.todoc.ui.components.ProjectContainer;
 import com.cleanup.todoc.ui.components.TasksAdapter;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 /**
  * <p>Home activity of the application which is displayed when the user opens the app.</p>
@@ -39,11 +37,6 @@ import java.util.concurrent.Executors;
  * @author Gaëtan HERFRAY
  */
 public class MainActivity extends AppCompatActivity implements TasksAdapter.DeleteTaskListener {
-
-    /**
-     * The database connection
-     */
-    private ApplicationDatabase database;
 
     /**
      * The container for projects
@@ -88,15 +81,6 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.database     = ApplicationDatabase.initialize(getApplicationContext());
-        this.tasksAdapter = new TasksAdapter(new ArrayList<>(), this);
-
-        this.projectContainer = new ProjectContainer(this.getApplicationContext());
-
-        this.database.projectRepository()
-                     .findAll()
-                     .observe(this, this.projectContainer::setContent);
-        this.database.taskRepository().findAll().observe(this, this::updateTasks);
 
         listTasks  = findViewById(R.id.list_tasks);
         lblNoTasks = findViewById(R.id.lbl_no_task);
@@ -106,9 +90,31 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
                 LinearLayoutManager.VERTICAL,
                 false
         ));
-        listTasks.setAdapter(this.tasksAdapter);
 
         findViewById(R.id.fab_add_task).setOnClickListener(view -> showAddTaskDialog());
+        this.init();
+    }
+
+    public void init() {
+
+        if (!ApplicationDatabase.hasInstance()) {
+            ApplicationDatabase.createProductionDatabase(this.getApplicationContext());
+        }
+
+        this.tasksAdapter     = new TasksAdapter(new ArrayList<>(), this);
+        this.projectContainer = new ProjectContainer(this.getApplicationContext());
+
+        ApplicationDatabase.getInstance()
+                           .projectRepository()
+                           .findAll()
+                           .observe(this, this.projectContainer::setContent);
+
+        ApplicationDatabase.getInstance()
+                           .taskRepository()
+                           .findAll()
+                           .observe(this, this::updateTasks);
+
+        this.listTasks.setAdapter(this.tasksAdapter);
     }
 
     @Override
@@ -139,7 +145,9 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     @Override
     public void onDeleteTask(Task task) {
 
-        ApplicationDatabase.run(() -> this.database.taskRepository().delete(task));
+        ApplicationDatabase.run(
+                () -> ApplicationDatabase.getInstance().taskRepository().delete(task)
+        );
     }
 
     /**
@@ -212,7 +220,9 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
      */
     private void addTask(@NonNull Task task) {
 
-        ApplicationDatabase.run(() -> this.database.taskRepository().saveAll(task));
+        ApplicationDatabase.run(
+                () -> ApplicationDatabase.getInstance().taskRepository().saveAll(task)
+        );
     }
 
     /**
