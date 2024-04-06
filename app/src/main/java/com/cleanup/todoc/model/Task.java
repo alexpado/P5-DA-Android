@@ -6,6 +6,7 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * <p>Model for the tasks of the application.</p>
@@ -120,9 +121,46 @@ public class Task {
         this.creationTimestamp = creationTimestamp;
     }
 
+    /**
+     * Get the timestamp when the task has been created.
+     *
+     * @return the timestamp when the task has been created
+     */
     public long getCreationTimestamp() {
 
         return creationTimestamp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Task task = (Task) o;
+        return id == task.id;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+
+        return String.format(
+                "Task{id=%s, projectId=%s, name=%s, creationTimestamp=%s}",
+                this.id,
+                this.projectId,
+                this.name,
+                this.creationTimestamp
+        );
     }
 
     /**

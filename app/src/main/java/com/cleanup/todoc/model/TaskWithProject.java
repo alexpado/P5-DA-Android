@@ -11,6 +11,21 @@ import java.util.Comparator;
  */
 public class TaskWithProject {
 
+    public static TaskWithProject build(Project project, Task task) {
+
+        if (project.getId() != task.getId()) {
+            throw new IllegalArgumentException(
+                    "The project and task provided doesn't match the relation constraint (task.projectId == project.id)"
+            );
+        }
+
+        TaskWithProject twp = new TaskWithProject();
+        twp.setProject(project);
+        twp.setTask(task);
+
+        return twp;
+    }
+
     @Embedded
     private Task task;
 
