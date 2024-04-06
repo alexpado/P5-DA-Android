@@ -66,7 +66,9 @@ public abstract class ApplicationDatabase extends RoomDatabase {
 
     /**
      * Utility method than run the provided {@link Runnable} on a separate thread. This can be
-     * useful to run queries against the database when in the android UI thread.
+     * useful to run queries against the database when in the android UI thread. This also can be
+     * used without interacting with the database as a mean to just run something outside the main
+     * thread.
      *
      * @param runnable
      *         The {@link Runnable} to execute on a separate thread.
@@ -96,7 +98,7 @@ public abstract class ApplicationDatabase extends RoomDatabase {
      * Callback class used to initialize the database default data when it is created for the first
      * time.
      */
-    static class CallBack extends RoomDatabase.Callback {
+    public static class CallBack extends RoomDatabase.Callback {
 
         /**
          * Return all default {@link Project} instances to add to the database when it is first
