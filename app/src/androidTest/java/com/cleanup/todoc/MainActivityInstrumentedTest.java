@@ -1,26 +1,31 @@
 package com.cleanup.todoc;
 
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.runner.AndroidJUnit4;
-import android.support.v7.widget.RecyclerView;
-import android.view.View;
-import android.widget.TextView;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.replaceText;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static com.cleanup.todoc.utils.TestUtils.expectedItemCount;
+import static com.cleanup.todoc.utils.TestUtils.withRecyclerView;
 
+import android.content.Context;
+
+import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.cleanup.todoc.database.ApplicationDatabase;
 import com.cleanup.todoc.ui.MainActivity;
+import com.cleanup.todoc.utils.TestDatabaseCallback;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.replaceText;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static com.cleanup.todoc.TestUtils.withRecyclerView;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -30,37 +35,46 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(AndroidJUnit4.class)
 public class MainActivityInstrumentedTest {
+
     @Rule
-    public ActivityTestRule<MainActivity> rule = new ActivityTestRule<>(MainActivity.class);
+    public ActivityScenarioRule<MainActivity> rule = new ActivityScenarioRule<>(MainActivity.class);
+
+    @Before
+    public void setup() {
+
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
+        ApplicationDatabase.createInMemoryDatabase(context, new TestDatabaseCallback());
+        this.rule.getScenario().onActivity(MainActivity::init);
+    }
+
+    @After
+    public void tearDown() {
+
+        ApplicationDatabase.getInstance().close();
+    }
 
     @Test
     public void addAndRemoveTask() {
-        MainActivity activity = rule.getActivity();
-        TextView lblNoTask = activity.findViewById(R.id.lbl_no_task);
-        RecyclerView listTasks = activity.findViewById(R.id.list_tasks);
 
         onView(withId(R.id.fab_add_task)).perform(click());
         onView(withId(R.id.txt_task_name)).perform(replaceText("Tâche example"));
         onView(withId(android.R.id.button1)).perform(click());
 
-        // Check that lblTask is not displayed anymore
-        assertThat(lblNoTask.getVisibility(), equalTo(View.GONE));
-        // Check that recyclerView is displayed
-        assertThat(listTasks.getVisibility(), equalTo(View.VISIBLE));
-        // Check that it contains one element only
-        assertThat(listTasks.getAdapter().getItemCount(), equalTo(1));
+        onView(withId(R.id.lbl_no_task))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
+        onView(withId(R.id.list_tasks))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
+                .check(expectedItemCount(1));
 
         onView(withId(R.id.img_delete)).perform(click());
 
-        // Check that lblTask is displayed
-        assertThat(lblNoTask.getVisibility(), equalTo(View.VISIBLE));
-        // Check that recyclerView is not displayed anymore
-        assertThat(listTasks.getVisibility(), equalTo(View.GONE));
+        onView(withId(R.id.lbl_no_task)).check(matches(withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)));
+        onView(withId(R.id.list_tasks))
+                .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
     }
 
     @Test
     public void sortTasks() {
-        MainActivity activity = rule.getActivity();
 
         onView(withId(R.id.fab_add_task)).perform(click());
         onView(withId(R.id.txt_task_name)).perform(replaceText("aaa Tâche example"));
@@ -119,4 +133,5 @@ public class MainActivityInstrumentedTest {
         onView(withRecyclerView(R.id.list_tasks).atPositionOnView(2, R.id.lbl_task_name))
                 .check(matches(withText("aaa Tâche example")));
     }
+
 }
