@@ -51,6 +51,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.5.1'
     androidTestImplementation 'androidx.test.espresso:espresso-intents:3.5.1'
+    androidTestUtil 'androidx.test:orchestrator:1.4.2'
 
     // PERSISTENCE DEPENDENCIES
     implementation 'androidx.room:room-runtime:2.3.0'
